@@ -40,7 +40,8 @@ const Score = styled.div`
 function GameView() {
 
   const [imgSrc, setImgSrc] = useState('assets/de1.png');
-  const currentMainGamer = 1;
+  const [score, setScore] = useState(0);
+  const currentMainGamer = 2;
 
   const launchDice = ()=>{    
     setImgSrc('assets/dice.gif');
@@ -48,6 +49,12 @@ function GameView() {
     setTimeout(()=>{
       setImgSrc(`assets/de${randomValue}.png`);
     }, 1000);
+  }
+
+  const choice = ()=>{    
+    setScore((prevState)=>{
+      return prevState + 10;
+    });
   }
 
 
@@ -61,7 +68,7 @@ function GameView() {
           </Button>
           <Score>
              <span style={{fontSize: '16px'}}>Score</span>
-             0
+             {score}
            </Score>  
         </Card>
       </Content>
@@ -74,13 +81,13 @@ function GameView() {
         <Card width='600px' height='500px'>
            <h3>Choisissez le chiffre sorti par votre adversaire</h3>
            <div style={{ display: 'flex', flexDirection: 'row' }}>
-              <Numbers>6</Numbers>
-              <Numbers className='selected-number'>4</Numbers>
-              <Numbers>1</Numbers>
+              <Numbers onClick={choice}>6</Numbers>
+              <Numbers onClick={choice} className='selected-number'>4</Numbers>
+              <Numbers onClick={choice}>1</Numbers>
            </div>
            <Score>
              <span style={{fontSize: '16px'}}>Score</span>
-             0
+             {score}
            </Score>
         </Card>
       </Content>
