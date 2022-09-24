@@ -22,7 +22,7 @@ const steps = [
         id: 5,
         name: 'End'
     }
-]
+];
 
 
 
@@ -44,7 +44,6 @@ const GlobalView = WrapperComponent =>{
         }
 
         startGame(){
-            console.log('Start the game');
             this.setState((prevState)=>{ 
                 return {step: prevState.step + 1}
             });

@@ -1,25 +1,7 @@
 import React from 'react'
 import styled from 'styled-components';
-import { Button } from '../style';
+import { Button, Content, Card } from '../style';
 import GlobalView from './GlobalView'
-
-const Content = styled.div`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center
-`;
-
-const Card = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: ${props => props.width || '100px'};
-  background-color: ${props => props.bgcolor || '#fff'};
-  padding: 10px;
-`;
 
 const Input = styled.input`
   height: 32px;
