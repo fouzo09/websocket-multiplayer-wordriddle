@@ -1,7 +1,8 @@
-import React from 'react'
+import React, {useState} from 'react'
 import styled from 'styled-components';
 import { Button, Content, Card } from '../style';
 import GlobalView from './GlobalView'
+import { generateGameCode } from '../helpers';
 
 const Input = styled.input`
   height: 32px;
@@ -24,22 +25,51 @@ const GuestCode = styled.p`
   align-items: center;
   border-radius: 5px;
 `
+const REACT_URL = 'http://localhost:3000';
 
-function StartView({step, startGame}) {
+function StartView({step, configGame}) {
 
-  console.log(step);
+  const [guestLink, setGuestLink] = useState();
+  const [initiator, setInitiator] = useState('fouzo09');
+  const [guest, setGuest] = useState('lambert');
 
+  const setConfigGame = ()=>{
+  
+    const gameCode = generateGameCode(6);
+    const newGame = `${REACT_URL}/${gameCode}`;
+
+    setGuestLink(newGame);
+    configGame(1, initiator);
+  }
+
+  const inputChange = (event)=>{
+    switch (event.target.name) {
+      case 'initiator':{
+        setInitiator(event.target.value);        
+        break;
+      }
+      case 'guest':{
+        setGuest(event.target.value);        
+        break;
+      }
+      default:{
+        return false;
+      }
+    }
+  }
+
+  
   if(step === 1){
     return (
       <Content>
         <Card width='600px'>
           <form style={{display: 'flex', flexDirection: 'column', gap: '6px', width: '80%'}}>
             <label>Votre pseudo</label>
-            <Input type='text' name='initiator' />
+            <Input type='text' value={initiator} onChange={inputChange} name='initiator' />
             <label>Pseudo de l'invité</label>
-            <Input type='text' name='guest' />
+            <Input type='text' value={guest} onChange={inputChange} name='guest' />
           </form>
-          <Button className='start' onClick={startGame}>
+          <Button className='start' onClick={setConfigGame}>
               Démarrer le jeu
           </Button>
         </Card>
@@ -53,7 +83,7 @@ function StartView({step, startGame}) {
         <Card width='600px'>
             <p>Partager ce lien à votre invité</p>
             <GuestCode>
-              <a target='blank' href="https://wordriddle.com/yoj-buim-mhy">https://wordriddle.com/yoj-buim-mhy</a>
+              <a target='blank' href={guestLink}>{guestLink}</a>
             </GuestCode>
         </Card>
       </Content>

@@ -2,6 +2,8 @@ import React, {useState} from 'react'
 import GlobalView from './GlobalView'
 import {Content, Card, Button} from '../style';
 import styled from 'styled-components';
+import { useParams } from 'react-router';
+import { useMemo } from 'react';
 
 const Numbers = styled.div`
   display: flex;
@@ -37,18 +39,24 @@ const Score = styled.div`
 `
 
 
-function GameView() {
+const GameView = ({step, joinGame, sendNumberToPredict})=>{
 
   const [imgSrc, setImgSrc] = useState('assets/de1.png');
   const [score, setScore] = useState(0);
-  const currentMainGamer = 2;
+  const {gameID} = useParams();
 
   const launchDice = ()=>{    
     setImgSrc('assets/dice.gif');
     const randomValue = Math.floor(Math.random() * 6) + 1;
+    const randomValue2 = Math.floor(Math.random() * 6) + 1;
+    const randomValue3 = Math.floor(Math.random() * 6) + 1;
+    const randomValues = [randomValue, randomValue2, randomValue3];
+    sendNumberToPredict(gameID, randomValues);
     setTimeout(()=>{
       setImgSrc(`assets/de${randomValue}.png`);
+      
     }, 1000);
+
   }
 
   const choice = ()=>{    
@@ -57,8 +65,11 @@ function GameView() {
     });
   }
 
+  if(gameID){
+    joinGame(gameID, 'lambert');
+  }
 
-  if(currentMainGamer === 1){
+  if(!gameID){
     return (
       <Content>
         <Card width='600px' height='500px'>
@@ -75,7 +86,8 @@ function GameView() {
     );
   }
 
-  if(currentMainGamer === 2){
+  if(gameID){
+   
     return (
       <Content>
         <Card width='600px' height='500px'>

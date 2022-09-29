@@ -4,7 +4,7 @@ import { Container } from '../style';
 const steps = [
     {
         id: 1,
-        name: 'Start'
+        name: 'Welcome'
     },
     {
         id: 2,
@@ -25,34 +25,88 @@ const steps = [
 ];
 
 
+const CHANNEL = 'ws://localhost:8081';
+const REACT_URL = 'http://localhost:3000';
 
-const GlobalView = WrapperComponent =>{
+const GlobalView = WrapperComponent => {
     class GlobalViewComponent extends React.Component{
+        
 
         constructor(props){
             super(props);
             this.state = {
-                step: steps[0].id
+                step: steps[0].id,
+                ws: null
             }
 
-            this.startGame = this.startGame.bind(this);
-
+            this.setStep = this.setStep.bind(this);
+            this.configGame = this.configGame.bind(this);
+            this.joinGame = this.joinGame.bind(this);
+            this.sendNumberToPredict = this.sendNumberToPredict.bind(this);
         }
 
         componentDidUpdate(){
-
+           
         }
 
-        startGame(){
-            this.setState((prevState)=>{ 
-                return {step: prevState.step + 1}
+        setStep(){
+            this.setState((prevState)=>{
+                return {step : prevState.step + 1};
             });
         }
-        
+
+        async configWebSocket(gameID, gamerName){
+            this.setState({...this.state, ws: new WebSocket(`${CHANNEL}/${gameID}/${gamerName}`)});
+        }
+
+        configGame(gameID, initiator){
+            const self = this;
+            this.configWebSocket(gameID, initiator).then(()=> {
+                
+                self.state.ws.onmessage = (response)=>{
+                    const data = JSON.parse(response.data);
+                    switch (data.action) {
+                        case 'STARTED':{
+                            window.location.href = '/game';
+                            break;
+                        }
+                        default:{
+                            break;
+                        } 
+                    }
+                }
+            });
+            this.setStep();
+        }
+
+        joinGame(gameID, guest){
+            const self = this;
+            this.configWebSocket(gameID, guest).then(()=> {
+                self.state.ws.onmessage = (message)=>{
+                    console.log(message);
+                }
+            });
+        }
+
+
+        sendNumberToPredict(gameID, randomValues){
+            console.log(randomValues);
+            this.state.ws.send(JSON.stringify({
+                gameID, 
+                content: randomValues, 
+                best: randomValues[0],
+                action: 'DISPLAY_DE_VALUE'
+            }));
+        }
+
         render(){
             return (
                 <Container>
-                    <WrapperComponent startGame={this.startGame} step={this.state.step} />
+                    <WrapperComponent 
+                        step={this.state.step} 
+                        configGame={this.configGame}
+                        joinGame={this.joinGame}
+                        sendNumberToPredict={this.sendNumberToPredict}/>
                 </Container>
             )
         }
@@ -61,4 +115,4 @@ const GlobalView = WrapperComponent =>{
     return GlobalViewComponent;
 }
 
-export default GlobalView
+export default GlobalView;

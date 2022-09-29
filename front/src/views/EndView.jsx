@@ -6,7 +6,7 @@ import lost from '../assets/lost.png'
 
 function EndView() {
 
-   const status = 0;
+   const status = 1;
    let content = '';
    
 

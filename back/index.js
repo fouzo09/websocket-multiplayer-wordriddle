@@ -3,43 +3,123 @@ const WebSocketServer = require('websocket').server;
 
 let connection = null;
 const PORT = 8081;
-const users = [];
+const games = [];
+const gamers = [];
+const ACTIONS = [
+    {'START': 'START'}
+];
 
 const httpServer = http.createServer((req, res)=>{
     console.log('Creation du serveur.')
 });
-const websocket = new WebSocketServer({
-    'httpServer': httpServer
-});
+
+const websocket = new WebSocketServer({ 'httpServer': httpServer });
 
 websocket.on("request", request=>{
-
-    connection = request.accept(null, request.origin);
-    const userID = request.resourceURL.pathname.split('/')[1];
     
+    connection = request.accept(null, request.origin);
+    const gameID = request.resourceURL.pathname.split('/')[1];
+    const gamerName = request.resourceURL.pathname.split('/')[2];
 
-    if(!userID) return false;
+    if(gameID && !games[gameID]){
+        games[gameID] = { 
+            [gamerName]: {
+                connection: connection, 
+                infos: {    
+                    name: gamerName, 
+                    title: 'Initiator', 
+                    score: 0, 
+                    isGuesser: true
+                }
+            } 
+        };
+        console.log(`Game ${gameID} created and ${gamerName} was added !!!!`);
+    }
 
-    console.log(`Welcome ${userID}`);
+    if(gameID && games[gameID]){
+        if(gamerName && !Object.keys(games[gameID]).includes(gamerName)){
+            games[gameID] = { 
+                    ...games[gameID], 
+                    [gamerName]: {
+                        connection: connection, 
+                        infos: {    
+                            name: gamerName, 
+                            title: 'Guest', 
+                            score: 0, 
+                            isGuesser: true
+                        }
+                    }  
+                };
 
-    users[userID] = connection;
-
-    connection.on("open", ()=>console.log("OPENED !!!!!!!!"));
-    connection.on("close", ()=>console.log("CLOSED !!!!!!!!"));
+            console.log(`${gamerName} join ${gameID} group game !!!!`);
+            const initiator = getInitiator(gameID);
+            startGame(games[gameID][initiator.infos.name].connection)
+        }
+    }
     connection.on("message", (message)=>{
-        message = JSON.parse(message.utf8Data);
-        const userID = message.userID;
-        const content = message.content;
-        console.log();
-        sendMessage(content, userID)
+        const {gameID, gamerName, content, action} = JSON.parse(message.utf8Data);
+        switch (action.toUpperCase()) {
+            case 'START':{
+                startGame(content, gameID, gamerName)
+                break;
+            }
+            case 'DISPLAY_DE_VALUE':{
+                
+            }
+            default:{
+                break;
+            }  
+        }
     });
+
+    connection.on("close", ()=>console.log("CLOSED !!!!!!!!"));
 });
 
-const sendMessage = (message, userID = null)=>{
-    if(userID){
-        users[userID].send(message);
-    }
+
+const startGame = (connection)=>{
+    if(!connection) return false;
+    connection.send(JSON.stringify({action: 'STARTED', message: 'started game.'}));
 }
+const getInitiator = (gameID)=>{
+    if(!gameID || !games[gameID]) return false;
+    const initiator = Object.values(games[gameID]).find(
+        gamer => gamer?.infos?.title === 'Initiator'
+    );
+    return initiator;
+}
+
+const getGuest = (gameID)=>{
+    if(!gameID || !games[gameID]) return false;
+    const guest = Object.values(games[gameID]).find(
+        gamer => gamer?.infos?.title === 'Guest'
+    );
+    return guest;
+}
+
+const getGuesser = (gameID)=>{
+    if(!gameID || !games[gameID]) return false;
+    const guesser = Object.values(games[gameID]).find(
+        gamer => gamer?.infos?.isGuesser === true
+    );
+    return guesser;
+}
+
+
+/*gamers[
+    {
+        id: 1,
+        pseudo: 'fouzo09',
+        hasHand: 1,
+        score: 10,
+    },
+    {
+
+    }
+]
+    let ws = new WebSocket("ws://localhost:8081/uU0lgH");
+    ws.onmessage = message => console.log(`Received: ${message.data}`);
+    socket.send("Salut !!!!");
+*/
 
 
 httpServer.listen(PORT, ()=>console.log(`Le serveur est demaré: http://localhost:${PORT}`));
