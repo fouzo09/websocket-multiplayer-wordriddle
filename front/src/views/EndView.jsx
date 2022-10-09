@@ -40,4 +40,4 @@ function EndView() {
  
 }
 
-export default GlobalView(EndView)
+export default EndView

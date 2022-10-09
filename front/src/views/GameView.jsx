@@ -1,9 +1,8 @@
 import React, {useState} from 'react'
-import GlobalView from './GlobalView'
 import {Content, Card, Button} from '../style';
 import styled from 'styled-components';
-import { useParams } from 'react-router';
-import { useMemo } from 'react';
+
+import { generateNumbers } from '../helpers';
 
 const Numbers = styled.div`
   display: flex;
@@ -39,22 +38,21 @@ const Score = styled.div`
 `
 
 
-const GameView = ({step, joinGame, sendNumberToPredict})=>{
+const GameView = ({gameId, configGame, sendNumbersToPredict, numbersToPredict})=>{
 
   const [imgSrc, setImgSrc] = useState('assets/de1.png');
   const [score, setScore] = useState(0);
-  const {gameID} = useParams();
 
   const launchDice = ()=>{    
+
     setImgSrc('assets/dice.gif');
+
     const randomValue = Math.floor(Math.random() * 6) + 1;
-    const randomValue2 = Math.floor(Math.random() * 6) + 1;
-    const randomValue3 = Math.floor(Math.random() * 6) + 1;
-    const randomValues = [randomValue, randomValue2, randomValue3];
-    sendNumberToPredict(gameID, randomValues);
+    const allNumbers = generateNumbers(randomValue);
+    
     setTimeout(()=>{
       setImgSrc(`assets/de${randomValue}.png`);
-      
+      sendNumbersToPredict(gameId, allNumbers);
     }, 1000);
 
   }
@@ -65,11 +63,7 @@ const GameView = ({step, joinGame, sendNumberToPredict})=>{
     });
   }
 
-  if(gameID){
-    joinGame(gameID, 'lambert');
-  }
-
-  if(!gameID){
+  if(!gameId){
     return (
       <Content>
         <Card width='600px' height='500px'>
@@ -86,17 +80,21 @@ const GameView = ({step, joinGame, sendNumberToPredict})=>{
     );
   }
 
-  if(gameID){
+  if(gameId){
    
     return (
       <Content>
         <Card width='600px' height='500px'>
-           <h3>Choisissez le chiffre sorti par votre adversaire</h3>
-           <div style={{ display: 'flex', flexDirection: 'row' }}>
-              <Numbers onClick={choice}>6</Numbers>
-              <Numbers onClick={choice} className='selected-number'>4</Numbers>
-              <Numbers onClick={choice}>1</Numbers>
-           </div>
+          {numbersToPredict &&
+            <>
+              <h3>Devinez le chiffre sorti par votre adversaire</h3>
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
+                  {numbersToPredict.map((item, key)=>(
+                    <Numbers key={key} onClick={choice}>{item}</Numbers>
+                  ))}
+              </div>
+            </> }
+           
            <Score>
              <span style={{fontSize: '16px'}}>Score</span>
              {score}
@@ -108,4 +106,4 @@ const GameView = ({step, joinGame, sendNumberToPredict})=>{
  
 }
 
-export default GlobalView(GameView)
+export default GameView;
