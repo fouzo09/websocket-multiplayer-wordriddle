@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import {Content, Card, Button} from '../style';
 import styled from 'styled-components';
 
@@ -21,6 +21,10 @@ const Numbers = styled.div`
     background-color: green;
     color: #fff;
   }
+  &.deactivated-number{
+    pointer-events: none;
+    opacity: 0.4;
+  }
 `;
 
 const Score = styled.div`
@@ -38,10 +42,11 @@ const Score = styled.div`
 `
 
 
-const GameView = ({gameId, configGame, sendNumbersToPredict, numbersToPredict})=>{
+const GameView = ({ gameId, configGame, sendNumbersToPredict, 
+                    numbersToPredict, best, sendResponseAfterPredicting,
+                    setRandomizerScore, score, setScore, setGamerStatus, gamerStatus})=>{
 
   const [imgSrc, setImgSrc] = useState('assets/de1.png');
-  const [score, setScore] = useState(0);
 
   const launchDice = ()=>{    
 
@@ -49,21 +54,32 @@ const GameView = ({gameId, configGame, sendNumbersToPredict, numbersToPredict})=
 
     const randomValue = Math.floor(Math.random() * 6) + 1;
     const allNumbers = generateNumbers(randomValue);
+    const best = randomValue;
     
     setTimeout(()=>{
       setImgSrc(`assets/de${randomValue}.png`);
-      sendNumbersToPredict(gameId, allNumbers);
+      sendNumbersToPredict(gameId, allNumbers, best);
     }, 1000);
 
   }
 
-  const choice = ()=>{    
-    setScore((prevState)=>{
-      return prevState + 10;
+  const choice = (event)=>{   
+    event.currentTarget.classList.add('selected-number');
+    document.querySelectorAll('.numbersBtn').forEach((element)=>{
+      element.classList.add('deactivated-number');
     });
+
+    if(event.currentTarget.getAttribute('value').toString() === best.toString()){
+      setScore();
+      sendResponseAfterPredicting(gameId, true);
+      setGamerStatus()
+    }else{
+      sendResponseAfterPredicting(gameId, false);
+    }
   }
 
-  if(!gameId){
+  if(gamerStatus === 'RANDOMIZER'){
+    
     return (
       <Content>
         <Card width='600px' height='500px'>
@@ -80,8 +96,19 @@ const GameView = ({gameId, configGame, sendNumbersToPredict, numbersToPredict})=
     );
   }
 
-  if(gameId){
+  if(gamerStatus === 'GUESSER'){
+
+    if(!numbersToPredict){
+      return (
+        <Content>
+          <Card width='600px'>
+            <p>Vous avez perdu, c'est à votre adversaire de lancer le dé, patientez svp.</p>
+          </Card>
+        </Content>
+      )
+    }
    
+
     return (
       <Content>
         <Card width='600px' height='500px'>
@@ -90,7 +117,7 @@ const GameView = ({gameId, configGame, sendNumbersToPredict, numbersToPredict})=
               <h3>Devinez le chiffre sorti par votre adversaire</h3>
               <div style={{ display: 'flex', flexDirection: 'row' }}>
                   {numbersToPredict.map((item, key)=>(
-                    <Numbers key={key} onClick={choice}>{item}</Numbers>
+                    <Numbers value={item} className='numbersBtn' key={key} onClick={choice}>{item}</Numbers>
                   ))}
               </div>
             </> }

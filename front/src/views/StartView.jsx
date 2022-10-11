@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import styled from 'styled-components';
 import { Button, Content, Card } from '../style';
 import { generateGameCode } from '../helpers';
@@ -26,7 +26,7 @@ const GuestCode = styled.p`
 `
 const REACT_URL = 'http://localhost:3000';
 
-function StartView({gameId, configGame}) {
+function StartView({gameId, setGameId, configGame, setGamerStatus, gamerStatus}) {
 
   const [guestLink, setGuestLink] = useState();
   const [initiator, setInitiator] = useState();
@@ -36,7 +36,7 @@ function StartView({gameId, configGame}) {
 
   const setInitiatorName = ()=>{
   
-    const generatedGameCode = 1; //generateGameCode(6);
+    const generatedGameCode = generateGameCode(6);
     const newGame = `${REACT_URL}/${generatedGameCode}`;
     
     setGameCode(generatedGameCode);
@@ -51,7 +51,9 @@ function StartView({gameId, configGame}) {
     configGame(gameId, input.current.value);
   }
 
-  if(!gameId){
+  console.log(gamerStatus);
+
+  if(gamerStatus === 'RANDOMIZER'){
     if(!initiator){
       return (
         <Content>
@@ -81,7 +83,7 @@ function StartView({gameId, configGame}) {
     
   }
   
-  if(gameId){
+  if(gamerStatus === 'GUESSER'){
     if(!guest){
       return (
         <Content>
